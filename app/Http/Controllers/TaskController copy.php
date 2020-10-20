@@ -1,14 +1,11 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\Folder;
 use App\Http\Requests\CreateTask;
 use App\Http\Requests\EditTask;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
 class TaskController extends Controller
 {
     /**
@@ -18,22 +15,16 @@ class TaskController extends Controller
      */
     public function index(Folder $folder)
     {
-        if (Auth::user()->id !== $folder->user_id) {
-            abort(403);
-        }
         // ユーザーのフォルダを取得する
         $folders = Auth::user()->folders()->get();
-
         // 選ばれたフォルダに紐づくタスクを取得する
         $tasks = $folder->tasks()->get();
-
         return view('tasks/index', [
             'folders' => $folders,
             'current_folder' => $folder,
             'tasks' => $tasks,
         ]);
     }
-
     /**
      * タスク作成フォーム
      * @param Folder $folder
@@ -45,7 +36,6 @@ class TaskController extends Controller
             'folder' => $folder,
         ]);
     }
-
     /**
      * タスク作成
      * @param Folder $folder
@@ -57,14 +47,9 @@ class TaskController extends Controller
         $task = new Task();
         $task->title = $request->title;
         $task->due_date = $request->due_date;
-
         $folder->tasks()->save($task);
-
-        return redirect()->route('tasks.index', [
-            'folder' => $folder,
-        ]);
+        return redirect()->route('tasks.index', ['folder'=>$folder]);
     }
-
     /**
      * タスク編集フォーム
      * @param Folder $folder
@@ -74,15 +59,10 @@ class TaskController extends Controller
     public function showEditForm(Folder $folder, Task $task)
     {
         $this->checkRelation($folder, $task);
-
-        if ($folder->id !== $task->folder_id) {
-            abort(404);
-        }
         return view('tasks/edit', [
             'task' => $task,
         ]);
     }
-
     /**
      * タスク編集
      * @param Folder $folder
@@ -93,15 +73,10 @@ class TaskController extends Controller
     public function edit(Folder $folder, Task $task, EditTask $request)
     {
         $this->checkRelation($folder, $task);
-
-        if ($folder->id !== $task->folder_id) {
-            abort(404);
-        }
         $task->title = $request->title;
         $task->status = $request->status;
         $task->due_date = $request->due_date;
         $task->save();
-
         return redirect()->route('tasks.index', [
             'folder' => $task->folder,
         ]);
@@ -110,6 +85,6 @@ class TaskController extends Controller
     {
     if ($folder->id !== $task->folder_id) {
         abort(404);
-        }
+    }
     }
 }
